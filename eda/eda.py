@@ -1,4 +1,3 @@
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -62,7 +61,7 @@ print(df["Churn"].value_counts(normalize=True) * 100)
 sns.countplot(data=df, x="Churn")
 plt.title("Customer Churn Distribution")
 plt.savefig("eda/churn_distribution.png")
-plt.show()
+plt.close()
 
 # Churn by contract type
 sns.countplot(data=df, x="Contract", hue="Churn")
@@ -70,10 +69,12 @@ plt.title("Churn by Contract Type")
 plt.xticks(rotation=15)
 plt.tight_layout()
 plt.savefig("eda/churn_by_contract.png")
-plt.show()
+plt.close()
 
 # Churn by tenure
 sns.boxplot(data=df, x="Churn", y="tenure")
 plt.title("Tenure vs Churn")
 plt.savefig("eda/tenure_vs_churn.png")
-plt.show()
+plt.close()
+
+print("\nCode Run. Graphs are saved at /eda")
