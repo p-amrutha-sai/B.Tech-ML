@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Churn Prediction</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">CUSTOMER ANALYTICS</div>
+      <h1>Customer Churn Prediction</h1>
+      <p>Enter a customer's details to estimate their likelihood of leaving the service.</p>
+    </header>
+
+    {% if error %}
+      <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    {% if result %}
+      <section class="result-card {% if result.prediction == 1 %}risk{% else %}safe{% endif %}">
+        <div class="result-label">PREDICTION RESULT</div>
+        {% if result.prediction == 1 %}
+          <h2>Customer is likely to churn</h2>
+          <p>This customer is classified in the churn category.</p>
+        {% else %}
+          <h2>Customer is not likely to churn</h2>
+          <p>This customer is classified in the non-churn category.</p>
+        {% endif %}
+
+        {% if result.probability is not none %}
+          <div class="probability-row">
+            <span>Estimated churn probability</span>
+            <strong>{{ "%.2f"|format(result.probability * 100) }}%</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: {{ result.probability * 100 }}%"></div>
+          </div>
+        {% else %}
+          <p class="muted">This model does not provide probability estimates.</p>
+        {% endif %}
+        <p class="disclaimer">Educational prediction only; not a guarantee of customer behaviour.</p>
+      </section>
+    {% endif %}
+
+    <form method="POST" class="form-card">
+      <section class="form-section">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div><h2>Customer information</h2><p>Basic details about the customer</p></div>
+        </div>
+        <div class="fields">
+          <label>Gender
+            <select name="gender">
+              <option>Male</option><option>Female</option>
+            </select>
+          </label>
+          <label>Senior Citizen
+            <select name="SeniorCitizen">
+              <option value="0">No</option><option value="1">Yes</option>
+            </select>
+          </label>
+          <label>Has Partner?
+            <select name="Partner"><option>Yes</option><option>No</option></select>
+          </label>
+          <label>Has Dependents?
+            <select name="Dependents"><option>Yes</option><option>No</option></select>
+          </label>
+          <label>Tenure (months)
+            <input type="number" name="tenure" min="0" max="72" value="12" required>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <span class="section-number">02</span>
+          <div><h2>Services</h2><p>Services currently used by the customer</p></div>
+        </div>
+        <div class="fields">
+          <label>Phone Service
+            <select name="PhoneService"><option>Yes</option><option>No</option></select>
+          </label>
+          <label>Multiple Lines
+            <select name="MultipleLines"><option>Yes</option><option>No</option><option>No phone service</option></select>
+          </label>
+          <label>Internet Service
+            <select name="InternetService"><option>DSL</option><option>Fiber optic</option><option>No</option></select>
+          </label>
+          <label>Online Security
+            <select name="OnlineSecurity"><option>Yes</option><option>No</option><option>No internet service</option></select>
+          </label>
+          <label>Online Backup
+            <select name="OnlineBackup"><option>Yes</option><option>No</option><option>No internet service</option></select>
+          </label>
+          <label>Device Protection
+            <select name="DeviceProtection"><option>Yes</option><option>No</option><option>No internet service</option></select>
+          </label>
+          <label>Tech Support
+            <select name="TechSupport"><option>Yes</option><option>No</option><option>No internet service</option></select>
+          </label>
+          <label>Streaming TV
+            <select name="StreamingTV"><option>Yes</option><option>No</option><option>No internet service</option></select>
+          </label>
+          <label>Streaming Movies
+            <select name="StreamingMovies"><option>Yes</option><option>No</option><option>No internet service</option></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-heading">
+          <span class="section-number">03</span>
+          <div><h2>Billing information</h2><p>Contract and payment details</p></div>
+        </div>
+        <div class="fields">
+          <label>Contract
+            <select name="Contract"><option>Month-to-month</option><option>One year</option><option>Two year</option></select>
+          </label>
+          <label>Paperless Billing
+            <select name="PaperlessBilling"><option>Yes</option><option>No</option></select>
+          </label>
+          <label>Payment Method
+            <select name="PaymentMethod">
+              <option>Electronic check</option>
+              <option>Mailed check</option>
+              <option>Bank transfer (automatic)</option>
+              <option>Credit card (automatic)</option>
+            </select>
+          </label>
+          <label>Monthly Charges
+            <input type="number" name="MonthlyCharges" min="0" max="150" step="0.01" value="70.00" required>
+          </label>
+          <label>Total Charges
+            <input type="number" name="TotalCharges" min="0" step="0.01" value="840.00" required>
+          </label>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="reset" class="reset-button">Reset form</button>
+        <button type="submit" class="submit-button">Predict churn <span aria-hidden="true">→</span></button>
+      </div>
+    </form>
+    <footer>Customer Churn Prediction · Machine Learning Project</footer>
+  </main>
+</body>
+</html>
