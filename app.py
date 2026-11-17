@@ -1,182 +1,83 @@
-
-import streamlit as st
+from flask import Flask, render_template, request
 import pandas as pd
 import joblib
+from pathlib import Path
 
-# Page configuration
-st.set_page_config(
-    page_title="Customer Churn Prediction",
-    page_icon="📊",
-    layout="centered"
+app = Flask(
+    __name__,
+    template_folder="web",
+    static_folder="web",
+    static_url_path="/web"
 )
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "model" / "churn_model.pkl"
 
-# Load trained model
-model = joblib.load("model/churn_model.pkl")
+# Load the already-trained model once when the server starts.
+model = joblib.load(MODEL_PATH)
 
-# Application title
-st.title("Customer Churn Prediction")
-st.write(
-    "Enter customer details to predict whether "
-    "the customer is likely to leave the service."
-)
+FEATURES = [
+    "gender", "SeniorCitizen", "Partner", "Dependents", "tenure",
+    "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity",
+    "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV",
+    "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod",
+    "MonthlyCharges", "TotalCharges"
+]
 
-# Customer details form
-with st.form("customer_form"):
+@app.route("/", methods=["GET", "POST"])
+def index():
+    result = None
+    error = None
+    form = {}
 
-    st.subheader("Customer Information")
+    if request.method == "POST":
+        try:
+            form = request.form.to_dict()
 
-    gender = st.selectbox(
-        "Gender", ["Male", "Female"]
-    )
+            customer = pd.DataFrame([{
+                "gender": form["gender"],
+                "SeniorCitizen": int(form["SeniorCitizen"]),
+                "Partner": form["Partner"],
+                "Dependents": form["Dependents"],
+                "tenure": int(form["tenure"]),
+                "PhoneService": form["PhoneService"],
+                "MultipleLines": form["MultipleLines"],
+                "InternetService": form["InternetService"],
+                "OnlineSecurity": form["OnlineSecurity"],
+                "OnlineBackup": form["OnlineBackup"],
+                "DeviceProtection": form["DeviceProtection"],
+                "TechSupport": form["TechSupport"],
+                "StreamingTV": form["StreamingTV"],
+                "StreamingMovies": form["StreamingMovies"],
+                "Contract": form["Contract"],
+                "PaperlessBilling": form["PaperlessBilling"],
+                "PaymentMethod": form["PaymentMethod"],
+                "MonthlyCharges": float(form["MonthlyCharges"]),
+                "TotalCharges": float(form["TotalCharges"])
+            }], columns=FEATURES)
 
-    senior = st.selectbox(
-        "Senior Citizen", [0, 1],
-        format_func=lambda x: "Yes" if x == 1 else "No"
-    )
+            prediction = int(model.predict(customer)[0])
 
-    partner = st.selectbox(
-        "Has Partner?", ["Yes", "No"]
-    )
+            # Find the probability column corresponding to class 1,
+            # rather than assuming that class 1 is always at index 1.
+            probability = None
+            if hasattr(model, "predict_proba"):
+                classes = list(model.classes_)
+                if 1 in classes:
+                    probability = float(model.predict_proba(customer)[0][classes.index(1)])
 
-    dependents = st.selectbox(
-        "Has Dependents?", ["Yes", "No"]
-    )
+            result = {
+                "prediction": prediction,
+                "probability": probability
+            }
 
-    tenure = st.number_input(
-        "Tenure (months)", 0, 72, 12
-    )
+        except Exception as exc:
+            error = (
+                "Prediction could not be completed. Check that the model "
+                "expects these 19 input features and that its preprocessing "
+                f"matches the training pipeline. Details: {exc}"
+            )
 
-    st.subheader("Services")
+    return render_template("index.html", result=result, error=error, form=form)
 
-    phone = st.selectbox(
-        "Phone Service", ["Yes", "No"]
-    )
 
-    multiple = st.selectbox(
-        "Multiple Lines",
-        ["Yes", "No", "No phone service"]
-    )
-
-    internet = st.selectbox(
-        "Internet Service",
-        ["DSL", "Fiber optic", "No"]
-    )
-
-    security = st.selectbox(
-        "Online Security",
-        ["Yes", "No", "No internet service"]
-    )
-
-    backup = st.selectbox(
-        "Online Backup",
-        ["Yes", "No", "No internet service"]
-    )
-
-    protection = st.selectbox(
-        "Device Protection",
-        ["Yes", "No", "No internet service"]
-    )
-
-    support = st.selectbox(
-        "Tech Support",
-        ["Yes", "No", "No internet service"]
-    )
-
-    tv = st.selectbox(
-        "Streaming TV",
-        ["Yes", "No", "No internet service"]
-    )
-
-    movies = st.selectbox(
-        "Streaming Movies",
-        ["Yes", "No", "No internet service"]
-    )
-
-    st.subheader("Billing Information")
-
-    contract = st.selectbox(
-        "Contract",
-        ["Month-to-month", "One year", "Two year"]
-    )
-
-    paperless = st.selectbox(
-        "Paperless Billing", ["Yes", "No"]
-    )
-
-    payment = st.selectbox(
-        "Payment Method",
-        [
-            "Electronic check",
-            "Mailed check",
-            "Bank transfer (automatic)",
-            "Credit card (automatic)"
-        ]
-    )
-
-    monthly = st.number_input(
-        "Monthly Charges",
-        min_value=0.0,
-        max_value=150.0,
-        value=70.0
-    )
-
-    total = st.number_input(
-        "Total Charges",
-        min_value=0.0,
-        value=840.0
-    )
-
-    submit = st.form_submit_button(
-        "Predict Churn"
-    )
-
-# Make prediction
-if submit:
-
-    # Create customer record
-    customer = pd.DataFrame([{
-        "gender": gender,
-        "SeniorCitizen": senior,
-        "Partner": partner,
-        "Dependents": dependents,
-        "tenure": tenure,
-        "PhoneService": phone,
-        "MultipleLines": multiple,
-        "InternetService": internet,
-        "OnlineSecurity": security,
-        "OnlineBackup": backup,
-        "DeviceProtection": protection,
-        "TechSupport": support,
-        "StreamingTV": tv,
-        "StreamingMovies": movies,
-        "Contract": contract,
-        "PaperlessBilling": paperless,
-        "PaymentMethod": payment,
-        "MonthlyCharges": monthly,
-        "TotalCharges": total
-    }])
-
-    # Predict churn
-    prediction = model.predict(customer)[0]
-
-    # Get probability of churn
-    probability = model.predict_proba(customer)[0][1]
-
-    st.divider()
-    st.subheader("Prediction Result")
-
-    if prediction == 1:
-        st.error("⚠️ Customer is likely to churn")
-    else:
-        st.success("✅ Customer is not likely to churn")
-
-    st.write(
-        f"Estimated churn probability: {probability * 100:.2f}%"
-    )
-
-    st.progress(float(probability))
-
-    st.caption(
-        "This is an educational prediction, "
-        "not a guarantee of customer behaviour."
-    )
+if __name__ == "__main__": app.run(host="127.0.0.1", port=5000, debug=True)
