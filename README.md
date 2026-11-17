@@ -2,7 +2,7 @@
 
 A machine learning project that predicts whether a telecom customer is likely to leave a service provider. The project uses customer demographics, account information, subscribed services, and billing details to identify customers who may churn.
 
-The project includes data exploration, preprocessing, model training, evaluation, and an interactive web application built using Streamlit.
+The project includes data exploration, preprocessing, model training, evaluation, and an interactive web application built using Flask.
 
 ## 1. Problem Statement
 
@@ -50,6 +50,10 @@ customer-churn-prediction/
 ├── model/
 │   └── churn_model.pkl
 │
+├── web/
+│   └── index.html
+│   └── styles.css
+│
 ├── app.py
 ├── requirements.txt
 └── README.md
@@ -63,7 +67,7 @@ customer-churn-prediction/
 | `eda/eda.py` | Performs exploratory data analysis |
 | `src/train.py` | Preprocesses data, trains and evaluates models |
 | `model/` | Stores the trained machine learning model |
-| `app.py` | Runs the interactive Streamlit application |
+| `app.py` | Runs the interactive application |
 | `requirements.txt` | Lists the required Python libraries |
 | `README.md` | Project documentation |
 
@@ -75,7 +79,7 @@ customer-churn-prediction/
 - **Matplotlib & Seaborn** – Data visualization
 - **Scikit-learn** – Data preprocessing and machine learning
 - **Joblib** – Saving and loading the trained model
-- **Streamlit** – Interactive web application
+- **Flask** – Interactive web application
 
 ## 5. Project Workflow
 
@@ -213,16 +217,6 @@ It also displays the predicted churn probability.
 
 - Python 3
 - pip
-- Git (optional)
-
-### Clone the Repository
-
-```bash
-git clone <your-github-repository-url>
-cd customer-churn-prediction
-```
-
-Alternatively, download the project and open its root directory in the terminal.
 
 ### Create a Virtual Environment
 
@@ -260,16 +254,16 @@ python src/train.py
 
 This trains the three classifiers, evaluates their performance, selects the model with the highest F1-score, and saves it inside the `model/` directory.
 
-### Launch the Streamlit Application
-
+### Launch the Application
+In the same virtual environment
 ```bash
-streamlit run app.py
+python app.py
 ```
 
 Open the local URL displayed in the terminal, usually:
 
 ```text
-http://localhost:8501
+http://127.0.0.1:5000/
 ```
 
 Enter customer details and click the prediction button to see the churn prediction.
@@ -312,4 +306,4 @@ This is an educational machine learning project built using a publicly available
 **Project:** Customer Churn Prediction  
 **Domain:** Machine Learning / Classification  
 **Language:** Python  
-**Interface:** Streamlit
+**Interface:** Flask
